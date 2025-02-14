@@ -5,7 +5,7 @@ pipeline{
         nodejs 'node16'
     }
     environment {
-        SCANNER_HOME=tool 'devsec'
+        SCANNER_HOME=tool 'devsec' //devsec = name of tool
     }
     stages {
         stage('clean workspace'){
@@ -20,16 +20,16 @@ pipeline{
         }
         stage("Sonarqube Analysis "){
             steps{
-                withSonarQubeEnv('devsec') {
-                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Netflix \
-                    -Dsonar.projectKey=Netflix '''
+                withSonarQubeEnv('devsec') { //devsec = name of sonarenv 
+                    sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Netflix \  
+                    -Dsonar.projectKey=Netflix '''// sonar-scanner = name of plugin installed
                 }
             }
         }
         stage("quality gate"){
            steps {
                 script {
-                    waitForQualityGate abortPipeline: false, credentialsId: 'devsec' 
+                    waitForQualityGate abortPipeline: false, credentialsId: 'devsec' //devsec = name of credentials create
                 }
             } 
         }
@@ -40,7 +40,7 @@ pipeline{
         }
         stage('OWASP FS SCAN') {
             steps {
-                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check'
+                dependencyCheck additionalArguments: '--scan ./ --disableYarnAudit --disableNodeAudit', odcInstallation: 'DP-Check' //DP-Check = name given when confguring OWASP tool
                 dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
@@ -53,7 +53,7 @@ pipeline{
             steps{
                 script{
                    withDockerRegistry(credentialsId: 'docker', toolName: 'docker'){   
-                       sh "docker build --build-arg TMDB_V3_API_KEY=e49b2d1e42241acaf3aed4be34d7e139 -t netflix ."
+                       sh "docker build --build-arg TMDB_V3_API_KEY=<apikey> -t netflix ."
                        sh "docker tag netflix tanay03/netflix:latest "
                        sh "docker push tanay03/netflix:latest "
                     }
